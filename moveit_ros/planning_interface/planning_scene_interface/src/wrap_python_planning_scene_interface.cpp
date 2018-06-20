@@ -36,8 +36,8 @@
 
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/py_bindings_tools/roscpp_initializer.h>
-#include <moveit/py_bindings_tools/py_conversions.h>
-#include <moveit/py_bindings_tools/serialize_msg.h>
+#include <moveit/python_tools/py_conversions.h>
+#include <moveit/python_tools/serialize_msg.h>
 
 #include <boost/function.hpp>
 #include <boost/python.hpp>
