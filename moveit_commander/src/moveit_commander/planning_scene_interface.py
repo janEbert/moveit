@@ -33,7 +33,6 @@
 # Author: Ioan Sucan, Felix Messmer
 
 import rospy
-import conversions
 
 from moveit_msgs.msg import CollisionObject, AttachedCollisionObject
 from moveit_ros_planning_interface import _moveit_planning_scene_interface
@@ -232,34 +231,16 @@ class PlanningSceneInterface(object):
         """
         Get the poses from the objects identified by the given object ids list.
         """
-        ser_ops = self._psi.get_object_poses(object_ids)
-        ops = dict()
-        for key in ser_ops:
-            msg = Pose()
-            conversions.msg_from_string(msg, ser_ops[key])
-            ops[key] = msg
-        return ops
+        return self._psi.get_object_poses(object_ids)
 
     def get_objects(self, object_ids = []):
         """
         Get the objects identified by the given object ids list. If no ids are provided, return all the known objects.
         """
-        ser_objs = self._psi.get_objects(object_ids)
-        objs = dict()
-        for key in ser_objs:
-            msg = CollisionObject()
-            conversions.msg_from_string(msg, ser_objs[key])
-            objs[key] = msg
-        return objs
+        return self._psi.get_objects(object_ids)
 
     def get_attached_objects(self, object_ids = []):
         """
         Get the attached objects identified by the given object ids list. If no ids are provided, return all the attached objects.
         """
-        ser_aobjs = self._psi.get_attached_objects(object_ids)
-        aobjs = dict()
-        for key in ser_aobjs:
-            msg = AttachedCollisionObject()
-            conversions.msg_from_string(msg, ser_aobjs[key])
-            aobjs[key] = msg
-        return aobjs
+        return self._psi.get_attached_objects(object_ids)

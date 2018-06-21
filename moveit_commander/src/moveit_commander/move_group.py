@@ -86,9 +86,7 @@ class MoveGroupCommander(object):
 
     def get_interface_description(self):
         """ Get the description of the planner interface (list of planner ids) """
-        desc = PlannerInterfaceDescription()
-        conversions.msg_from_string(desc, self._g.get_interface_description())
-        return desc
+        return self._g.get_interface_description()
 
     def get_pose_reference_frame(self):
         """ Get the reference frame assumed for poses of end-effectors """
@@ -153,7 +151,7 @@ class MoveGroupCommander(object):
         >>> moveit_robot_state.joint_state = joint_state
         >>> group.set_start_state(moveit_robot_state)
         """
-        self._g.set_start_state(conversions.msg_to_string(msg))
+        self._g.set_start_state(msg)
 
     def get_joint_value_target(self):
         return self._g.get_joint_value_target()
@@ -173,13 +171,13 @@ class MoveGroupCommander(object):
         Instead, one IK solution will be computed first, and that will be sent to the planner.
         """
         if isinstance(arg1, RobotState):
-            if not self._g.set_state_value_target(conversions.msg_to_string(arg1)):
+            if not self._g.set_state_value_target(arg1):
                 raise MoveItCommanderException("Error setting state target. Is the target state within bounds?")
 
         elif isinstance(arg1, JointState):
             if (arg2 is not None or arg3 is not None):
                 raise MoveItCommanderException("Too many arguments specified")
-            if not self._g.set_joint_value_target_from_joint_state_message(conversions.msg_to_string(arg1)):
+            if not self._g.set_joint_value_target_from_joint_state_message(arg1):
                 raise MoveItCommanderException("Error setting joint target. Is the target within bounds?")
 
         elif isinstance(arg1, str):
@@ -211,9 +209,9 @@ class MoveGroupCommander(object):
                         raise MoveItCommanderException("Unexpected type")
             r = False
             if type(arg1) is PoseStamped:
-                r = self._g.set_joint_value_target_from_pose_stamped(conversions.msg_to_string(arg1), eef, approx)
+                r = self._g.set_joint_value_target_from_pose_stamped(arg1, eef, approx)
             else:
-                r = self._g.set_joint_value_target_from_pose(conversions.msg_to_string(arg1), eef, approx)
+                r = self._g.set_joint_value_target_from_pose(arg1, eef, approx)
             if not r:
                 if approx:
                     raise MoveItCommanderException("Error setting joint target. Does your IK solver support approximate IK?")
@@ -381,10 +379,7 @@ class MoveGroupCommander(object):
 
     def get_path_constraints(self):
         """ Get the acutal path constraints in form of a moveit_msgs.msgs.Constraints """
-        c = Constraints()
-        c_str = self._g.get_path_constraints()
-        conversions.msg_from_string(c,c_str)
-        return c
+        return self._g.get_path_constraints()
 
     def set_path_constraints(self, value):
         """ Specify the path constraints to be used (as read from the database) """
@@ -392,7 +387,7 @@ class MoveGroupCommander(object):
             self.clear_path_constraints()
         else:
             if type(value) is Constraints:
-                self._g.set_path_constraints_from_msg(conversions.msg_to_string(value))
+                self._g.set_path_constraints_from_msg(value)
             elif not self._g.set_path_constraints(value):
                 raise MoveItCommanderException("Unable to set path constraints " + value)
 
@@ -402,10 +397,7 @@ class MoveGroupCommander(object):
 
     def get_trajectory_constraints(self):
         """ Get the actual trajectory constraints in form of a moveit_msgs.msgs.Constraints """
-        c = Constraints()
-        c_str = self._g.get_trajectory_constraints()
-        conversions.msg_from_string(c, c_str)
-        return c
+        return self._g.get_trajectory_constraints()
 
     def set_trajectory_constraints(self, value):
         """ Specify the trajectory constraints to be used """
@@ -413,7 +405,7 @@ class MoveGroupCommander(object):
             self.clear_trajectory_constraints()
         else:
             if type(value) is TrajectoryConstraints:
-                self._g.set_trajectory_constraints_from_msg(conversions.msg_to_string(value))
+                self._g.set_trajectory_constraints_from_msg(value)
             elif not self._g.set_trajectory_constraints(value):
                 raise MoveItCommanderException("Unable to set trajectory constraints " + value)
 
@@ -507,31 +499,24 @@ class MoveGroupCommander(object):
                 self.set_joint_value_target(self.get_remembered_joint_values()[joints])
             except:
                 self.set_joint_value_target(joints)
-        plan = RobotTrajectory()
-        plan.deserialize(self._g.compute_plan())
-        return plan
+        return self._g.compute_plan()
 
     def compute_cartesian_path(self, waypoints, eef_step, jump_threshold, avoid_collisions = True, path_constraints = None):
         """ Compute a sequence of waypoints that make the end-effector move in straight line segments that follow the poses specified as waypoints. Configurations are computed for every eef_step meters; The jump_threshold specifies the maximum distance in configuration space between consecutive points in the resultingpath; Kinematic constraints for the path given by path_constraints will be met for every point along the trajectory, if they are not met, a partial solution will be returned. The return value is a tuple: a fraction of how much of the path was followed, the actual RobotTrajectory. """
         if path_constraints:
-            if type(path_constraints) is Constraints:
-                constraints_str = conversions.msg_to_string(path_constraints)
-            else:
+            if type(path_constraints) is not Constraints:
                 raise MoveItCommanderException("Unable to set path constraints, unknown constraint type " + type(path_constraints))
-            (ser_path, fraction) = self._g.compute_cartesian_path([conversions.pose_to_list(p) for p in waypoints], eef_step, jump_threshold, avoid_collisions, constraints_str)
+            (path, fraction) = self._g.compute_cartesian_path([conversions.pose_to_list(p) for p in waypoints], eef_step, jump_threshold, avoid_collisions, path_constraints)
         else:
-            (ser_path, fraction) = self._g.compute_cartesian_path([conversions.pose_to_list(p) for p in waypoints], eef_step, jump_threshold, avoid_collisions)
-
-        path = RobotTrajectory()
-        path.deserialize(ser_path)
+            (path, fraction) = self._g.compute_cartesian_path([conversions.pose_to_list(p) for p in waypoints], eef_step, jump_threshold, avoid_collisions)
         return (path, fraction)
 
     def execute(self, plan_msg, wait = True):
         """Execute a previously planned path"""
         if wait:
-            return self._g.execute(conversions.msg_to_string(plan_msg))
+            return self._g.execute(plan_msg)
         else:
-            return self._g.async_execute(conversions.msg_to_string(plan_msg))
+            return self._g.async_execute(plan_msg)
 
     def attach_object(self, object_name, link_name = "", touch_links = []):
         """ Given the name of an object existing in the planning scene, attach it to a link. The link used is specified by the second argument. If left unspecified, the end-effector link is used, if one is known. If there is no end-effector link, the first link in the group is used. If no link is identified, failure is reported. True is returned if an attach request was succesfully sent to the move_group node. This does not verify that the attach request also was successfuly applied by move_group."""
@@ -543,10 +528,7 @@ class MoveGroupCommander(object):
 
     def pick(self, object_name, grasp = []):
         """Pick the named object. A grasp message, or a list of Grasp messages can also be specified as argument."""
-        if type(grasp) is Grasp:
-            return self._g.pick(object_name, conversions.msg_to_string(grasp))
-        else:
-            return self._g.pick(object_name, [conversions.msg_to_string(x) for x in grasp])
+        return self._g.pick(object_name, grasp)
 
     def place(self, object_name, location=None):
         """Place the named object at a particular location in the environment or somewhere safe in the world if location is not provided"""
@@ -561,7 +543,7 @@ class MoveGroupCommander(object):
         elif type(location) is Pose:
             result = self._g.place(object_name, conversions.pose_to_list(location))
         elif type(location) is PlaceLocation:
-            result = self._g.place(object_name, conversions.msg_to_string(location))
+            result = self._g.place(object_name, location)
         else:
             raise MoveItCommanderException("Parameter location must be a Pose, PoseStamped or PlaceLocation object")
         return result
@@ -571,9 +553,4 @@ class MoveGroupCommander(object):
         self._g.set_support_surface_name(value)
 
     def retime_trajectory(self, ref_state_in, traj_in, velocity_scaling_factor):
-        ser_ref_state_in = conversions.msg_to_string(ref_state_in)
-        ser_traj_in = conversions.msg_to_string(traj_in)
-        ser_traj_out = self._g.retime_trajectory(ser_ref_state_in, ser_traj_in, velocity_scaling_factor)
-        traj_out = RobotTrajectory()
-        traj_out.deserialize(ser_traj_out)
-        return traj_out
+        return self._g.retime_trajectory(ref_state_in, traj_in, velocity_scaling_factor)

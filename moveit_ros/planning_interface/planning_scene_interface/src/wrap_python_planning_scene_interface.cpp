@@ -73,41 +73,21 @@ public:
   bp::dict getObjectPosesPython(bp::list object_ids)
   {
     std::map<std::string, geometry_msgs::Pose> ops = getObjectPoses(py_bindings_tools::stringFromList(object_ids));
-    std::map<std::string, std::string> ser_ops;
-    for (std::map<std::string, geometry_msgs::Pose>::const_iterator it = ops.begin(); it != ops.end(); ++it)
-      ser_ops[it->first] = py_bindings_tools::serializeMsg(it->second);
-
-    return py_bindings_tools::dictFromType(ser_ops);
+    return py_bindings_tools::dictFromType(ops);
   }
 
   bp::dict getObjectsPython(bp::list object_ids)
   {
     std::map<std::string, moveit_msgs::CollisionObject> objs =
         getObjects(py_bindings_tools::stringFromList(object_ids));
-    std::map<std::string, std::string> ser_objs;
-    for (std::map<std::string, moveit_msgs::CollisionObject>::const_iterator it = objs.begin(); it != objs.end(); ++it)
-      ser_objs[it->first] = py_bindings_tools::serializeMsg(it->second);
-
-    return py_bindings_tools::dictFromType(ser_objs);
+    return py_bindings_tools::dictFromType(objs);
   }
 
   bp::dict getAttachedObjectsPython(const bp::list& object_ids)
   {
     std::map<std::string, moveit_msgs::AttachedCollisionObject> aobjs =
         getAttachedObjects(py_bindings_tools::stringFromList(object_ids));
-    std::map<std::string, std::string> ser_aobjs;
-    for (std::map<std::string, moveit_msgs::AttachedCollisionObject>::const_iterator it = aobjs.begin();
-         it != aobjs.end(); ++it)
-      ser_aobjs[it->first] = py_bindings_tools::serializeMsg(it->second);
-
-    return py_bindings_tools::dictFromType(ser_aobjs);
-  }
-
-  bool applyPlanningScenePython(const std::string& ps_str)
-  {
-    moveit_msgs::PlanningScene ps_msg;
-    py_bindings_tools::deserializeMsg(ps_str, ps_msg);
-    return applyPlanningScene(ps_msg);
+    return py_bindings_tools::dictFromType(aobjs);
   }
 };
 
@@ -121,7 +101,7 @@ static void wrap_planning_scene_interface()
   PlanningSceneClass.def("get_object_poses", &PlanningSceneInterfaceWrapper::getObjectPosesPython);
   PlanningSceneClass.def("get_objects", &PlanningSceneInterfaceWrapper::getObjectsPython);
   PlanningSceneClass.def("get_attached_objects", &PlanningSceneInterfaceWrapper::getAttachedObjectsPython);
-  PlanningSceneClass.def("apply_planning_scene", &PlanningSceneInterfaceWrapper::applyPlanningScenePython);
+  PlanningSceneClass.def("apply_planning_scene", &PlanningSceneInterfaceWrapper::applyPlanningScene);
 }
 }
 }
