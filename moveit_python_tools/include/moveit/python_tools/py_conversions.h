@@ -43,6 +43,8 @@
 #include <vector>
 #include <map>
 
+#include <ros/serialization.h>
+
 namespace moveit
 {
 namespace py_bindings_tools
@@ -93,6 +95,94 @@ boost::python::list listFromString(const std::vector<std::string>& v)
 {
   return listFromType<std::string>(v);
 }
+
+/** \brief Convert a ROS message to a string */
+template <typename T>
+std::string serializeMsg(const T& msg)
+{
+  // we use the fact char is same size as uint8_t;
+  static_assert(sizeof(uint8_t) == sizeof(char), "Assuming char has same size as uint8_t");
+  std::size_t size = ros::serialization::serializationLength(msg);
+  std::string result(size, '\0');
+  if (size)
+  {
+    // we convert the message into a string because that is easy to send back & forth with Python
+    // This is fine since C0x because &string[0] is guaranteed to point to a contiguous block of memory
+    ros::serialization::OStream stream(reinterpret_cast<uint8_t*>(&result[0]), size);
+    ros::serialization::serialize(stream, msg);
+  }
+  return result;
+}
+
+/** \brief Convert a string to a ROS message */
+template <typename T>
+void deserializeMsg(const std::string& data, T& msg)
+{
+  static_assert(sizeof(uint8_t) == sizeof(char), "Assuming char has same size as uint8_t");
+  ros::serialization::IStream stream(const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(&data[0])), data.size());
+  ros::serialization::deserialize(stream, msg);
+}
+
+// From
+// https://github.com/ubi-agni/moveit_task_constructor/blob/19e68839ea4f6f8b135514a5eb97b8bedea206e2/core/include/moveit/python/python_tools/conversions.h#L69-L130
+
+/// Convert a ROS message (from python) to a string
+std::string fromPython(const boost::python::object& msg);
+
+/// Convert a string to a python ROS message of given type
+PyObject* toPython(const std::string& data, const boost::python::type_info& type_info);
+
+/// non-templated base class for ROSMsgConverter<T> providing common methods
+class ROSMsgConverterBase
+{
+protected:
+  /// Register type internally and return true if registered first time
+  static bool insert(const boost::python::type_info& type_info, const std::string& message);
+
+  /// Determine if python object can be converted into C++ msg type
+  static void* convertible(PyObject* object);
+};
+
+/// converter type to be registered with boost::python type conversion
+/// https://sixty-north.com/blog/how-to-write-boost-python-type-converters.html
+template <typename T>
+struct ROSMsgConverter : ROSMsgConverterBase
+{
+  /// constructor registers the type converter
+  ROSMsgConverter(const std::string& message = "")
+  {
+    auto type_info = boost::python::type_id<T>();
+    if (insert(type_info, message))
+    {
+      /// register type with boost::python converter system
+      boost::python::converter::registry::push_back(&convertible, &construct, type_info);
+      boost::python::to_python_converter<T, ROSMsgConverter<T>>();
+    }
+  }
+
+  /// Conversion from Python object to C++ object, using pre-allocated memory block
+  static void construct(PyObject* object, boost::python::converter::rvalue_from_python_stage1_data* data)
+  {
+    // serialize python msgs into string
+    std::string serialized = fromPython(boost::python::object(boost::python::borrowed(object)));
+
+    // Obtain a pointer to the memory block that the converter has allocated for the C++ type.
+    void* storage = reinterpret_cast<boost::python::converter::rvalue_from_python_storage<T>*>(data)->storage.bytes;
+    // Allocate the C++ type into the pre-allocated memory block, and assign its pointer to the converter's convertible
+    // variable.
+    T* result = new (storage) T();
+    data->convertible = result;
+
+    // deserialize string into C++ msg
+    deserializeMsg(serialized, *result);
+  }
+
+  /// Conversion from C++ object to Python object
+  static PyObject* convert(const T& msg)
+  {
+    return toPython(serializeMsg(msg), typeid(T));
+  }
+};
 }
 }
 
