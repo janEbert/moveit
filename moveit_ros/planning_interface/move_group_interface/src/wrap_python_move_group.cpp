@@ -35,7 +35,7 @@
 /* Author: Ioan Sucan */
 
 #include <moveit/move_group_interface/move_group_interface.h>
-#include <moveit/py_bindings_tools/roscpp_initializer.h>
+#include <moveit/python_tools/roscpp_initializer.h>
 #include <moveit/python_tools/py_conversions.h>
 #include <moveit/robot_state/conversions.h>
 #include <moveit/robot_trajectory/robot_trajectory.h>
@@ -55,14 +55,14 @@ namespace moveit
 {
 namespace planning_interface
 {
-class MoveGroupInterfaceWrapper : protected py_bindings_tools::ROScppInitializer, public MoveGroupInterface
+class MoveGroupInterfaceWrapper : protected python_tools::ROScppInitializer, public MoveGroupInterface
 {
 public:
   // ROSInitializer is constructed first, and ensures ros::init() was called, if
   // needed
   MoveGroupInterfaceWrapper(const std::string& group_name, const std::string& robot_description,
                             const std::string& ns = "")
-    : py_bindings_tools::ROScppInitializer()
+    : python_tools::ROScppInitializer()
     , MoveGroupInterface(Options(group_name, robot_description, ros::NodeHandle(ns)),
                          boost::shared_ptr<tf::Transformer>(), ros::WallDuration(5, 0))
   {
@@ -70,12 +70,12 @@ public:
 
   bool setJointValueTargetPerJointPythonList(const std::string& joint, bp::list& values)
   {
-    return setJointValueTarget(joint, py_bindings_tools::doubleFromList(values));
+    return setJointValueTarget(joint, python_tools::doubleFromList(values));
   }
 
   bool setJointValueTargetPythonIterable(bp::object& values)
   {
-    return setJointValueTarget(py_bindings_tools::doubleFromList(values));
+    return setJointValueTarget(python_tools::doubleFromList(values));
   }
 
   bool setJointValueTargetPythonDict(bp::dict& values)
@@ -125,7 +125,7 @@ public:
 
   void rememberJointValuesFromPythonList(const std::string& string, bp::list& values)
   {
-    rememberJointValues(string, py_bindings_tools::doubleFromList(values));
+    rememberJointValues(string, python_tools::doubleFromList(values));
   }
 
   const char* getPlanningFrameCStr() const
@@ -142,22 +142,22 @@ public:
 
   bp::list getActiveJointsList() const
   {
-    return py_bindings_tools::listFromString(getActiveJoints());
+    return python_tools::listFromString(getActiveJoints());
   }
 
   bp::list getJointsList() const
   {
-    return py_bindings_tools::listFromString(getJoints());
+    return python_tools::listFromString(getJoints());
   }
 
   bp::list getCurrentJointValuesList()
   {
-    return py_bindings_tools::listFromDouble(getCurrentJointValues());
+    return python_tools::listFromDouble(getCurrentJointValues());
   }
 
   bp::list getRandomJointValuesList()
   {
-    return py_bindings_tools::listFromDouble(getRandomJointValues());
+    return python_tools::listFromDouble(getRandomJointValues());
   }
 
   bp::dict getRememberedJointValuesPython() const
@@ -165,7 +165,7 @@ public:
     const std::map<std::string, std::vector<double> >& rv = getRememberedJointValues();
     bp::dict d;
     for (std::map<std::string, std::vector<double> >::const_iterator it = rv.begin(); it != rv.end(); ++it)
-      d[it->first] = py_bindings_tools::listFromDouble(it->second);
+      d[it->first] = python_tools::listFromDouble(it->second);
     return d;
   }
 
@@ -179,7 +179,7 @@ public:
     v[4] = pose.orientation.y;
     v[5] = pose.orientation.z;
     v[6] = pose.orientation.w;
-    return moveit::py_bindings_tools::listFromDouble(v);
+    return moveit::python_tools::listFromDouble(v);
   }
 
   bp::list convertTransformToList(const geometry_msgs::Transform& tr) const
@@ -192,12 +192,12 @@ public:
     v[4] = tr.rotation.y;
     v[5] = tr.rotation.z;
     v[6] = tr.rotation.w;
-    return py_bindings_tools::listFromDouble(v);
+    return python_tools::listFromDouble(v);
   }
 
   void convertListToTransform(const bp::list& l, geometry_msgs::Transform& tr) const
   {
-    std::vector<double> v = py_bindings_tools::doubleFromList(l);
+    std::vector<double> v = python_tools::doubleFromList(l);
     tr.translation.x = v[0];
     tr.translation.y = v[1];
     tr.translation.z = v[2];
@@ -209,7 +209,7 @@ public:
 
   void convertListToPose(const bp::list& l, geometry_msgs::Pose& p) const
   {
-    std::vector<double> v = py_bindings_tools::doubleFromList(l);
+    std::vector<double> v = python_tools::doubleFromList(l);
     p.position.x = v[0];
     p.position.y = v[1];
     p.position.z = v[2];
@@ -221,7 +221,7 @@ public:
 
   bp::list getCurrentRPYPython(const std::string& end_effector_link = "")
   {
-    return py_bindings_tools::listFromDouble(getCurrentRPY(end_effector_link));
+    return python_tools::listFromDouble(getCurrentRPY(end_effector_link));
   }
 
   bp::list getCurrentPosePython(const std::string& end_effector_link = "")
@@ -238,7 +238,7 @@ public:
 
   bp::list getKnownConstraintsList() const
   {
-    return py_bindings_tools::listFromString(getKnownConstraints());
+    return python_tools::listFromString(getKnownConstraints());
   }
 
   bool placePose(const std::string& object_name, const bp::list& pose)
@@ -267,7 +267,7 @@ public:
     for (int i = 0; i < l; ++i)
     {
       const bp::list& pose = bp::extract<bp::list>(poses[i]);
-      std::vector<double> v = py_bindings_tools::doubleFromList(pose);
+      std::vector<double> v = python_tools::doubleFromList(pose);
       if (v.size() == 6 || v.size() == 7)
       {
         Eigen::Affine3d p;
@@ -310,7 +310,7 @@ public:
 
   bool setPoseTargetPython(bp::list& pose, const std::string& end_effector_link = "")
   {
-    std::vector<double> v = py_bindings_tools::doubleFromList(pose);
+    std::vector<double> v = python_tools::doubleFromList(pose);
     geometry_msgs::Pose msg;
     if (v.size() == 6)
       tf::quaternionTFToMsg(tf::createQuaternionFromRPY(v[3], v[4], v[5]), msg.orientation);
@@ -360,7 +360,7 @@ public:
 
   bp::list getNamedTargetsPython()
   {
-    return py_bindings_tools::listFromString(getNamedTargets());
+    return python_tools::listFromString(getNamedTargets());
   }
 
   bool movePython()
@@ -375,7 +375,7 @@ public:
 
   bool attachObjectPython(const std::string& object_name, const std::string& link_name, const bp::list& touch_links)
   {
-    return attachObject(object_name, link_name, py_bindings_tools::stringFromList(touch_links));
+    return attachObject(object_name, link_name, python_tools::stringFromList(touch_links));
   }
 
   bool executePython(const moveit_msgs::RobotTrajectory& traj)

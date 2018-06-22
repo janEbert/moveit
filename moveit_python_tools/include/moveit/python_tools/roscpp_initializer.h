@@ -34,8 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_PY_BINDINGS_TOOLS_ROSCPP_INITIALIZER_
-#define MOVEIT_PY_BINDINGS_TOOLS_ROSCPP_INITIALIZER_
+#ifndef MOVEIT_PYTHON_TOOLS_ROSCPP_INITIALIZER_
+#define MOVEIT_PYTHON_TOOLS_ROSCPP_INITIALIZER_
 
 #include <boost/python.hpp>
 #include <string>
@@ -43,7 +43,7 @@
 namespace moveit
 {
 /** \brief Tools for creating python bindings for MoveIt */
-namespace py_bindings_tools
+namespace python_tools
 {
 /** \brief The constructor of this class ensures that ros::init() has
     been called.  Thread safety and multiple initialization is

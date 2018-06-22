@@ -34,8 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_PY_BINDINGS_TOOLS_PY_CONVERSIONS_
-#define MOVEIT_PY_BINDINGS_TOOLS_PY_CONVERSIONS_
+#ifndef MOVEIT_PYTHON_TOOLS_PY_CONVERSIONS_
+#define MOVEIT_PYTHON_TOOLS_PY_CONVERSIONS_
 
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
@@ -47,10 +47,10 @@
 
 namespace moveit
 {
-namespace py_bindings_tools
+namespace python_tools
 {
 template <typename T>
-std::vector<T> typeFromList(const boost::python::object& values)
+inline std::vector<T> typeFromList(const boost::python::object& values)
 {
   boost::python::stl_input_iterator<T> begin(values), end;
   std::vector<T> v;
@@ -59,7 +59,7 @@ std::vector<T> typeFromList(const boost::python::object& values)
 }
 
 template <typename T>
-boost::python::list listFromType(const std::vector<T>& v)
+inline boost::python::list listFromType(const std::vector<T>& v)
 {
   boost::python::list l;
   for (std::size_t i = 0; i < v.size(); ++i)
@@ -68,7 +68,7 @@ boost::python::list listFromType(const std::vector<T>& v)
 }
 
 template <typename T>
-boost::python::dict dictFromType(const std::map<std::string, T>& v)
+inline boost::python::dict dictFromType(const std::map<std::string, T>& v)
 {
   boost::python::dict d;
   for (typename std::map<std::string, T>::const_iterator it = v.begin(); it != v.end(); ++it)
@@ -76,22 +76,22 @@ boost::python::dict dictFromType(const std::map<std::string, T>& v)
   return d;
 }
 
-std::vector<double> doubleFromList(const boost::python::object& values)
+inline std::vector<double> doubleFromList(const boost::python::object& values)
 {
   return typeFromList<double>(values);
 }
 
-std::vector<std::string> stringFromList(const boost::python::object& values)
+inline std::vector<std::string> stringFromList(const boost::python::object& values)
 {
   return typeFromList<std::string>(values);
 }
 
-boost::python::list listFromDouble(const std::vector<double>& v)
+inline boost::python::list listFromDouble(const std::vector<double>& v)
 {
   return listFromType<double>(v);
 }
 
-boost::python::list listFromString(const std::vector<std::string>& v)
+inline boost::python::list listFromString(const std::vector<std::string>& v)
 {
   return listFromType<std::string>(v);
 }

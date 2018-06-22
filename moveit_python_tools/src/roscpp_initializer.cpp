@@ -34,7 +34,7 @@
 
 /* Author: Ioan Sucan */
 
-#include <moveit/py_bindings_tools/roscpp_initializer.h>
+#include <moveit/python_tools/roscpp_initializer.h>
 #include <moveit/python_tools/py_conversions.h>
 #include <boost/thread.hpp>
 #include <ros/ros.h>
@@ -52,7 +52,7 @@ static std::string& ROScppNodeName()
   return node_name;
 }
 
-void moveit::py_bindings_tools::roscpp_set_arguments(const std::string& node_name, boost::python::list& argv)
+void moveit::python_tools::roscpp_set_arguments(const std::string& node_name, boost::python::list& argv)
 {
   ROScppNodeName() = node_name;
   ROScppArgs() = stringFromList(argv);
@@ -119,39 +119,39 @@ static void roscpp_init_or_stop(bool init)
   }
 }
 
-void moveit::py_bindings_tools::roscpp_init()
+void moveit::python_tools::roscpp_init()
 {
   roscpp_init_or_stop(true);
 }
 
-void moveit::py_bindings_tools::roscpp_init(const std::string& node_name, boost::python::list& argv)
+void moveit::python_tools::roscpp_init(const std::string& node_name, boost::python::list& argv)
 {
   roscpp_set_arguments(node_name, argv);
   roscpp_init();
 }
 
-void moveit::py_bindings_tools::roscpp_init(boost::python::list& argv)
+void moveit::python_tools::roscpp_init(boost::python::list& argv)
 {
   ROScppArgs() = stringFromList(argv);
   roscpp_init();
 }
 
-void moveit::py_bindings_tools::roscpp_shutdown()
+void moveit::python_tools::roscpp_shutdown()
 {
   roscpp_init_or_stop(false);
 }
 
-moveit::py_bindings_tools::ROScppInitializer::ROScppInitializer()
+moveit::python_tools::ROScppInitializer::ROScppInitializer()
 {
   roscpp_init();
 }
 
-moveit::py_bindings_tools::ROScppInitializer::ROScppInitializer(boost::python::list& argv)
+moveit::python_tools::ROScppInitializer::ROScppInitializer(boost::python::list& argv)
 {
   roscpp_init(argv);
 }
 
-moveit::py_bindings_tools::ROScppInitializer::ROScppInitializer(const std::string& node_name, boost::python::list& argv)
+moveit::python_tools::ROScppInitializer::ROScppInitializer(const std::string& node_name, boost::python::list& argv)
 {
   roscpp_init(node_name, argv);
 }

@@ -36,7 +36,7 @@
 
 #include <moveit/common_planning_interface_objects/common_objects.h>
 #include <moveit/robot_state/conversions.h>
-#include <moveit/py_bindings_tools/roscpp_initializer.h>
+#include <moveit/python_tools/roscpp_initializer.h>
 #include <moveit/python_tools/py_conversions.h>
 #include <moveit_msgs/RobotState.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -51,11 +51,11 @@ namespace bp = boost::python;
 
 namespace moveit
 {
-class RobotInterfacePython : protected py_bindings_tools::ROScppInitializer
+class RobotInterfacePython : protected python_tools::ROScppInitializer
 {
 public:
   RobotInterfacePython(const std::string& robot_description, const std::string& ns = "")
-    : py_bindings_tools::ROScppInitializer()
+    : python_tools::ROScppInitializer()
   {
     robot_model_ = planning_interface::getSharedRobotModel(robot_description);
     if (!robot_model_)
@@ -71,14 +71,14 @@ public:
 
   bp::list getJointNames() const
   {
-    return py_bindings_tools::listFromString(robot_model_->getJointModelNames());
+    return python_tools::listFromString(robot_model_->getJointModelNames());
   }
 
   bp::list getGroupJointNames(const std::string& group) const
   {
     const robot_model::JointModelGroup* jmg = robot_model_->getJointModelGroup(group);
     if (jmg)
-      return py_bindings_tools::listFromString(jmg->getJointModelNames());
+      return python_tools::listFromString(jmg->getJointModelNames());
     else
       return bp::list();
   }
@@ -90,7 +90,7 @@ public:
     {
       std::vector<std::string> tips;
       jmg->getEndEffectorTips(tips);
-      return py_bindings_tools::listFromString(tips);
+      return python_tools::listFromString(tips);
     }
     else
       return bp::list();
@@ -98,21 +98,21 @@ public:
 
   bp::list getLinkNames() const
   {
-    return py_bindings_tools::listFromString(robot_model_->getLinkModelNames());
+    return python_tools::listFromString(robot_model_->getLinkModelNames());
   }
 
   bp::list getGroupLinkNames(const std::string& group) const
   {
     const robot_model::JointModelGroup* jmg = robot_model_->getJointModelGroup(group);
     if (jmg)
-      return py_bindings_tools::listFromString(jmg->getLinkModelNames());
+      return python_tools::listFromString(jmg->getLinkModelNames());
     else
       return bp::list();
   }
 
   bp::list getGroupNames() const
   {
-    return py_bindings_tools::listFromString(robot_model_->getJointModelGroupNames());
+    return python_tools::listFromString(robot_model_->getJointModelGroupNames());
   }
 
   bp::list getJointLimits(const std::string& name) const
@@ -157,7 +157,7 @@ public:
       v[4] = q.y();
       v[5] = q.z();
       v[6] = q.w();
-      l = py_bindings_tools::listFromDouble(v);
+      l = python_tools::listFromDouble(v);
     }
     return l;
   }
@@ -201,7 +201,7 @@ public:
       return boost::python::dict();
     std::map<std::string, double> values;
     jmg->getVariableDefaultPositions(named_state, values);
-    return py_bindings_tools::dictFromType(values);
+    return python_tools::dictFromType(values);
   }
 
   bool ensureCurrentState(double wait = 1.0)
@@ -268,14 +268,14 @@ public:
     }
     state->setVariableValues(joint_state);
     visualization_msgs::MarkerArray msg;
-    state->getRobotMarkers(msg, py_bindings_tools::stringFromList(links));
+    state->getRobotMarkers(msg, python_tools::stringFromList(links));
 
     return msg;
   }
 
   visualization_msgs::MarkerArray getRobotMarkersPythonDict(bp::dict& values)
   {
-    bp::list links = py_bindings_tools::listFromString(robot_model_->getLinkModelNames());
+    bp::list links = python_tools::listFromString(robot_model_->getLinkModelNames());
     return getRobotMarkersPythonDictList(values, links);
   }
 
@@ -309,7 +309,7 @@ public:
       return visualization_msgs::MarkerArray();
     robot_state::RobotStatePtr s = current_state_monitor_->getCurrentState();
     visualization_msgs::MarkerArray msg;
-    s->getRobotMarkers(msg, py_bindings_tools::stringFromList(links));
+    s->getRobotMarkers(msg, python_tools::stringFromList(links));
 
     return msg;
   }
@@ -336,7 +336,7 @@ public:
     if (!jmg)
       // TODO return nullptr instead?
       return visualization_msgs::MarkerArray();
-    bp::list links = py_bindings_tools::listFromString(jmg->getLinkModelNames());
+    bp::list links = python_tools::listFromString(jmg->getLinkModelNames());
     return getRobotMarkersPythonDictList(values, links);
   }
 

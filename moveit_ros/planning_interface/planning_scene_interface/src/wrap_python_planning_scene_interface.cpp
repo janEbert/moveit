@@ -35,7 +35,7 @@
 /* Author: Ioan Sucan */
 
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
-#include <moveit/py_bindings_tools/roscpp_initializer.h>
+#include <moveit/python_tools/roscpp_initializer.h>
 #include <moveit/python_tools/py_conversions.h>
 
 #include <boost/function.hpp>
@@ -50,44 +50,42 @@ namespace moveit
 {
 namespace planning_interface
 {
-class PlanningSceneInterfaceWrapper : protected py_bindings_tools::ROScppInitializer, public PlanningSceneInterface
+class PlanningSceneInterfaceWrapper : protected python_tools::ROScppInitializer, public PlanningSceneInterface
 {
 public:
   // ROSInitializer is constructed first, and ensures ros::init() was called, if needed
-  PlanningSceneInterfaceWrapper(const std::string& ns)
-    : py_bindings_tools::ROScppInitializer(), PlanningSceneInterface(ns)
+  PlanningSceneInterfaceWrapper(const std::string& ns) : python_tools::ROScppInitializer(), PlanningSceneInterface(ns)
   {
   }
 
   bp::list getKnownObjectNamesPython(bool with_type = false)
   {
-    return py_bindings_tools::listFromString(getKnownObjectNames(with_type));
+    return python_tools::listFromString(getKnownObjectNames(with_type));
   }
 
   bp::list getKnownObjectNamesInROIPython(double minx, double miny, double minz, double maxx, double maxy, double maxz,
                                           bool with_type = false)
   {
-    return py_bindings_tools::listFromString(getKnownObjectNamesInROI(minx, miny, minz, maxx, maxy, maxz, with_type));
+    return python_tools::listFromString(getKnownObjectNamesInROI(minx, miny, minz, maxx, maxy, maxz, with_type));
   }
 
   bp::dict getObjectPosesPython(bp::list object_ids)
   {
-    std::map<std::string, geometry_msgs::Pose> ops = getObjectPoses(py_bindings_tools::stringFromList(object_ids));
-    return py_bindings_tools::dictFromType(ops);
+    std::map<std::string, geometry_msgs::Pose> ops = getObjectPoses(python_tools::stringFromList(object_ids));
+    return python_tools::dictFromType(ops);
   }
 
   bp::dict getObjectsPython(bp::list object_ids)
   {
-    std::map<std::string, moveit_msgs::CollisionObject> objs =
-        getObjects(py_bindings_tools::stringFromList(object_ids));
-    return py_bindings_tools::dictFromType(objs);
+    std::map<std::string, moveit_msgs::CollisionObject> objs = getObjects(python_tools::stringFromList(object_ids));
+    return python_tools::dictFromType(objs);
   }
 
   bp::dict getAttachedObjectsPython(const bp::list& object_ids)
   {
     std::map<std::string, moveit_msgs::AttachedCollisionObject> aobjs =
-        getAttachedObjects(py_bindings_tools::stringFromList(object_ids));
-    return py_bindings_tools::dictFromType(aobjs);
+        getAttachedObjects(python_tools::stringFromList(object_ids));
+    return python_tools::dictFromType(aobjs);
   }
 };
 

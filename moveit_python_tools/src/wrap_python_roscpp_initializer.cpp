@@ -34,7 +34,7 @@
 
 /* Author: Ioan Sucan */
 
-#include <moveit/py_bindings_tools/roscpp_initializer.h>
+#include <moveit/python_tools/roscpp_initializer.h>
 #include <boost/python.hpp>
 #include <Python.h>
 
@@ -42,9 +42,9 @@ namespace bp = boost::python;
 
 static void wrap_roscpp_initializer()
 {
-  void (*init_fn)(const std::string&, bp::list&) = &moveit::py_bindings_tools::roscpp_init;
+  void (*init_fn)(const std::string&, bp::list&) = &moveit::python_tools::roscpp_init;
   bp::def("roscpp_init", init_fn);
-  bp::def("roscpp_shutdown", &moveit::py_bindings_tools::roscpp_shutdown);
+  bp::def("roscpp_shutdown", &moveit::python_tools::roscpp_shutdown);
 }
 
 BOOST_PYTHON_MODULE(_moveit_roscpp_initializer)

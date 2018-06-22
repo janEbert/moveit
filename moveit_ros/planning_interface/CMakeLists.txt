@@ -39,7 +39,6 @@ if(NOT EIGEN3_INCLUDE_DIRS)
 endif()
 
 set(THIS_PACKAGE_INCLUDE_DIRS
-  py_bindings_tools/include
   common_planning_interface_objects/include
   planning_scene_interface/include
   move_group_interface/include
@@ -74,7 +73,6 @@ include_directories(SYSTEM
 link_directories(${Boost_LIBRARY_DIRS})
 link_directories(${catkin_LIBRARY_DIRS})
 
-add_subdirectory(py_bindings_tools)
 add_subdirectory(common_planning_interface_objects)
 add_subdirectory(planning_scene_interface)
 add_subdirectory(move_group_interface)
